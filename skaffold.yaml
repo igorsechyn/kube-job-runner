@@ -17,4 +17,4 @@ build:
 deploy:
   kubectl:
     manifests:
-    - ./minikube/*
+    - ./minikube-config/*
