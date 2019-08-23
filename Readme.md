@@ -6,12 +6,18 @@ A spike to implement kubernetes job runner
 
 - go 1.12.9
 - docker 18.06.1-ce (multistage build is required)
-- minikube 0.26 for local development
+- minikube 0.26 for local development (https://kubernetes.io/docs/tasks/tools/install-minikube/)
 - skaffold (https://github.com/GoogleContainerTools/skaffold)
 
 ## Setting up a development machine
 
 1. Start minikube
+
+On OSX use hyperkit (see https://minikube.sigs.k8s.io/docs/start/macos/)
+
+```
+minikube start --vm-driver=hyperkit
+```
 
 2. Install project dependencies
 
