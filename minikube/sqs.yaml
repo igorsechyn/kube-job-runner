@@ -1,0 +1,63 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: elasticmq
+  namespace: default
+data:
+  elasticmq.conf.file: |-
+    include classpath("application.conf")
+    // What is the outside visible address of this ElasticMQ node (used by rest-sqs)
+    node-address {
+        protocol = http
+        host = sqs
+        port = 9324
+        context-path = ""
+    }
+    rest-sqs {
+        enabled = true
+        bind-port = 9324
+        bind-hostname = "0.0.0.0"
+        // Possible values: relaxed, strict
+        sqs-limits = relaxed
+    }
+    queues {
+        q {
+        }
+    }
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: sqs
+spec:
+  template:
+    metadata:
+      labels:
+        app: sqs
+    spec:
+      containers:
+      - name: sqs
+        image: softwaremill/elasticmq:latest
+        args: ["-Dconfig.file=/etc/elasticmq/elasticmq.conf"]
+        ports:
+        - containerPort: 9324
+        volumeMounts:
+        - name: elasticmq-conf
+          mountPath: /etc/elasticmq
+      volumes:
+      - name: elasticmq-conf
+        configMap:
+          name: elasticmq
+          items:
+          - key: elasticmq.conf.file
+            path: elasticmq.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqs
+spec:
+  ports:
+  - port: 9324
+  selector:
+    app: sqs

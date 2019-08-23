@@ -1,0 +1,5 @@
+minikube
+vendor
+bin
+.git
+build

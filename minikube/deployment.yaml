@@ -1,0 +1,144 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: service-env
+  namespace: default
+data:
+  MICROS_ENV: local
+  PG_DB_SCHEMA: executions
+  PG_DB_HOST: postgres
+  PG_DB_PASSWORD: password
+  PG_DB_ROLE: user
+  PG_DB_PORT: "5432"
+  SQS_Q_QUEUE_URL: http://sqs:9324/queue/q
+  SQS_Q_QUEUE_REGION: elasticmq
+  SQS_Q_QUEUE_NAME: q
+  SQS_WAIT_TIME_SECONDS: "0"
+  NAMESPACE: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webserver
+  labels:
+    app: webserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      containers:
+      - name: webserver
+        image: igorsechyn/kube-job-runner
+        env:
+        - name: COMPONENTS
+          value: web-server
+        envFrom:
+        - configMapRef:
+            name: service-env
+        ports:
+        - name: http
+          containerPort: 8080
+      initContainers:
+      - name: db-init
+        image: igorsechyn/db-init
+        envFrom:
+        - configMapRef:
+            name: service-env
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messages-processor
+  labels:
+    app: messages-processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: messages-processor
+  template:
+    metadata:
+      labels:
+        app: messages-processor
+    spec:
+      containers:
+      - name: messages-processor
+        image: igorsechyn/kube-job-runner
+        env:
+        - name: COMPONENTS
+          value: messages-processor
+        envFrom:
+        - configMapRef:
+            name: service-env
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-status-processor
+  labels:
+    app: job-status-processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: job-status-processor
+  template:
+    metadata:
+      labels:
+        app: job-status-processor
+    spec:
+      containers:
+      - name: job-status-processor
+        image: igorsechyn/kube-job-runner
+        env:
+        - name: COMPONENTS
+          value: job-status-processor
+        envFrom:
+        - configMapRef:
+            name: service-env
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod-events-processor
+  labels:
+    app: pod-events-processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pod-events-processor
+  template:
+    metadata:
+      labels:
+        app: pod-events-processor
+    spec:
+      containers:
+      - name: pod-events-processor
+        image: igorsechyn/kube-job-runner
+        env:
+        - name: COMPONENTS
+          value: pod-events-processor
+        envFrom:
+        - configMapRef:
+            name: service-env
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: webserver
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 31317
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: webserver

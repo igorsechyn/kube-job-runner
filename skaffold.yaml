@@ -1,0 +1,20 @@
+apiVersion: skaffold/v1beta1
+kind: Config
+build:
+  artifacts:
+  - image: igorsechyn/kube-job-runner
+    docker:
+      dockerfile: Dockerfile
+      buildArgs:
+        main_pkg: "kube-job-runner/cmd/kube-job-runner"
+        binary_name: "kube-job-runner"
+    context: .
+  - image: igorsechyn/db-init
+    docker:
+      dockerfile: Dockerfile.init
+    context: .
+  local: {}  
+deploy:
+  kubectl:
+    manifests:
+    - ./minikube/*

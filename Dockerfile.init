@@ -1,0 +1,7 @@
+FROM alpine
+RUN apk --no-cache add \
+    ca-certificates curl curl-dev tar gzip
+WORKDIR /
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.5.0/migrate.linux-amd64.tar.gz | tar xvz
+COPY ./migrations /migrations/
+ENTRYPOINT ./migrate.linux-amd64 -path /migrations/ -database postgres://$PG_DB_ROLE:$PG_DB_PASSWORD@$PG_DB_HOST:$PG_DB_PORT/$PG_DB_SCHEMA?sslmode=disable up
