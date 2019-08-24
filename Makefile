@@ -1,11 +1,11 @@
 .PHONY: build install fmt install lint test test-unit install-ci clean watch test-race test-integration release
 MAIN_PKG := kube-job-runner/cmd/kube-job-runner
 BINARY_NAME := kube-job-runner
-GIT_HASH := $(shell git rev-parse --short HEAD)
-SERVICE_URL = $(shell minikube service webserver --namespace default --url)
-SERVICE_HOST = $(shell echo $(SERVICE_URL) | cut -c 8- )
+GIT_HASH := $$(git rev-parse --short HEAD)
+SERVICE_URL = $$(minikube service webserver --namespace default --url)
+SERVICE_HOST = $$(echo $(SERVICE_URL) | cut -c 8- )
 IMAGE_NAME := igorsechyn/kube-job-runner
-PWD := $(shell pwd)
+PWD := $$(pwd)
 DOCKER_DIGEST := $$(docker inspect --format='{{index .RepoDigests 0}}' $(IMAGE_NAME):$(GIT_HASH))
 clean:
 	rm -rf build/bin/*
@@ -42,6 +42,7 @@ deploy-local:
 	skaffold run
 
 wait-for-service:
+	minikube service webserver --namespace default --url
 	./bin/wait-for.sh $(SERVICE_HOST) -t 360
 
 run-local-migrations:
