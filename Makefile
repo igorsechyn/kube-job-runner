@@ -1,12 +1,11 @@
 .PHONY: build install fmt install lint test test-unit install-ci clean watch test-race test-integration release
 MAIN_PKG := kube-job-runner/cmd/kube-job-runner
 BINARY_NAME := kube-job-runner
-GIT_HASH := $$(git rev-parse --short HEAD)
-SERVICE_URL = $$(minikube service webserver --namespace default --url)
-SERVICE_HOST = $$(echo $(SERVICE_URL) | cut -c 8- )
+GIT_HASH := $(shell git rev-parse --short HEAD)
+SERVICE_URL = $(shell minikube service webserver --namespace default --url)
 IMAGE_NAME := igorsechyn/kube-job-runner
-PWD := $$(pwd)
-DOCKER_DIGEST := $$(docker inspect --format='{{index .RepoDigests 0}}' $(IMAGE_NAME):$(GIT_HASH))
+PWD := $(shell pwd)
+DOCKER_DIGEST = $(shell docker inspect --format='{{index .RepoDigests 0}}' $(IMAGE_NAME):$(GIT_HASH))
 clean:
 	rm -rf build/bin/*
 
@@ -18,8 +17,8 @@ build: clean fmt
 	chmod +x build/bin/darwin.amd64/$(BINARY_NAME)
 
 fmt:
-	gofmt -w=true -s $$(find . -type f -name '*.go' -not -path "./vendor/*")
-	goimports -w=true -d $$(find . -type f -name '*.go' -not -path "./vendor/*")
+	gofmt -w=true -s $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+	goimports -w=true -d $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
 test-unit:
 	go test -tags unit ./... -timeout 120s -count 1
@@ -42,8 +41,8 @@ deploy-local:
 	skaffold run
 
 wait-for-service:
-	minikube service webserver --namespace default --url
-	./bin/wait-for.sh $(SERVICE_HOST) -t 360
+	$(eval HOST=$(shell minikube service webserver --namespace default --url | cut -c 8-))
+	./bin/wait-for.sh $(HOST) -t 360
 
 run-local-migrations:
 	curl -v -X POST $(SERVICE_URL)/migrate
