@@ -1,0 +1,7 @@
+FROM alpine
+RUN apk --no-cache add \
+    ca-certificates curl curl-dev tar gzip
+COPY bin/wait-for.sh /
+RUN chmod +x /wait-for.sh
+WORKDIR /
+ENTRYPOINT wait-for.sh $HOST -t 180

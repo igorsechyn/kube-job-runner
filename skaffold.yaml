@@ -13,6 +13,10 @@ build:
     docker:
       dockerfile: Dockerfile.init
     context: .
+  - image: igorsechyn/wait-for
+    docker:
+      dockerfile: Dockerfile.wait
+    context: .
   local: {}  
 deploy:
   kubectl:

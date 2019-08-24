@@ -2,10 +2,10 @@ FROM golang:1.12.9 AS build-env
 ARG binary_name
 ARG main_pkg
 WORKDIR /service/
-ADD go.mod /service/
-ADD go.sum /service/
-RUN go mod download
-COPY . /service/
+RUN git config --global http.postBuffer 524288000
+COPY go.mod go.sum /service/
+RUN go mod download && go mod vendor && go install -i ./vendor/...
+COPY cmd migrations pkg /service/
 RUN GOARCH=amd64 GOOS=linux CGO_ENABLED=0 go build -o build/bin/linux.amd64/${binary_name} ${main_pkg}
 
 FROM alpine

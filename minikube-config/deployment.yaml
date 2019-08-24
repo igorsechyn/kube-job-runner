@@ -50,6 +50,16 @@ spec:
         envFrom:
         - configMapRef:
             name: service-env
+      - name: wait-for-pq
+        image: igorsechyn/wait-for
+        env:
+        - name: HOST
+          value: "postgres:5432"
+      - name: wait-for-sqs
+        image: igorsechyn/wait-for
+        env:
+        - name: HOST
+          value: "sqs:9324"
 ---
 apiVersion: apps/v1
 kind: Deployment
