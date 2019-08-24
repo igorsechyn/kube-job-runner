@@ -4,4 +4,4 @@ RUN apk --no-cache add \
 COPY bin/wait-for.sh /
 RUN chmod +x /wait-for.sh
 WORKDIR /
-ENTRYPOINT wait-for.sh $HOST -t 180
+ENTRYPOINT ./wait-for.sh $HOST -t 180

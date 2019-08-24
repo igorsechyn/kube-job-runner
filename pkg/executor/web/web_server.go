@@ -69,15 +69,6 @@ func (webServer *Server) Run(ctx context.Context, app *app.App) {
 		writer.WriteHeader(http.StatusOK)
 	})
 
-	router.Post("/migrate", func(writer http.ResponseWriter, request *http.Request) {
-		err := app.MigrationsService.RunMigrations()
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		writer.WriteHeader(http.StatusOK)
-	})
-
 	err := http.ListenAndServe(":8080", router)
 	if err != nil {
 		app.Reporter.Error("server.startup.error", err, map[string]interface{}{})

@@ -12,7 +12,6 @@ import (
 	"kube-job-runner/pkg/app/id/uuid"
 	"kube-job-runner/pkg/app/job"
 	"kube-job-runner/pkg/app/job/k8s"
-	"kube-job-runner/pkg/app/migrations"
 	"kube-job-runner/pkg/app/queue"
 	"kube-job-runner/pkg/app/queue/sqs"
 	"kube-job-runner/pkg/app/reporter"
@@ -48,14 +47,9 @@ func main() {
 		DataStore:   store,
 		Queue:       queueManager,
 	}
-	migrationsService := &migrations.Service{
-		Reporter: appReporter,
-		Config:   appConfig,
-	}
 	application := &app.App{
 		Reporter:          appReporter,
 		JobService:        jobService,
-		MigrationsService: migrationsService,
 		Queue:             queueManager,
 		Config:            appConfig,
 		JobClient:         k8sClient,
