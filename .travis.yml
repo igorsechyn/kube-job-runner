@@ -6,7 +6,8 @@ go:
   - "1.12.9"
 cache:
   directories:
-    - $GOPATH/pkg/mod  
+    - $GOPATH/pkg/mod
+    - $GOCACHE
 env:
   global:
     - MINIKUBE_WANTUPDATENOTIFICATION=false

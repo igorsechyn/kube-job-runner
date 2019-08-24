@@ -41,8 +41,7 @@ deploy-local:
 	skaffold run
 
 wait-for-service:
-	minikube service webserver --namespace default --url
-	$(eval HOST=$(shell minikube service webserver --namespace default --url | cut -c 8-))
+	$(eval HOST=$(shell minikube service webserver --namespace default --url | cut -d '/' -f 3-))
 	./bin/wait-for.sh $(HOST) -t 360
 
 run-local-migrations:
