@@ -1,3 +1,5 @@
+https://travis-ci.org/igorsechyn/kube-job-runner.svg?branch=master
+
 # Kubernetes job runner
 
 A spike to implement kubernetes job runner
@@ -35,17 +37,15 @@ See `skaffold.yaml` for configuration
     make deploy-local
     ```
 
-4. Run local database migrations, after the service is actually running (when deploy is finished, it does not mean it is running)
-
-    ```
-    make run-local-migrations
-    ```
-
 5. Ensure your environment is working by running the pre-commit check
 
     ```
     make test
     ```
+
+## Migrations
+
+DB migrations are executed automatically as an `initContainer` of the `web-server` in `./minikube-config/deployment.yaml`. For local dev loop and CI two additional init container are added to wait for sqs and pg being available.
 
 ## During development
 
@@ -58,3 +58,7 @@ Commits to this codebase should follow the [conventional changelog conventions](
 - `make deploy-local` - executes `skaffold run` to deploy runner to minikube (including postgres and elasticmq)
 - `make watch` - runs unit tests on every change
 - `skaffold dev` - will redeploy application on each change to minikube
+
+## CI
+
+Travis CI - https://travis-ci.org/igorsechyn/kube-job-runner
