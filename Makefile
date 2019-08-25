@@ -2,7 +2,7 @@
 MAIN_PKG := kube-job-runner/cmd/kube-job-runner
 BINARY_NAME := kube-job-runner
 GIT_HASH := $(shell git rev-parse --short HEAD)
-SERVICE_URL = $(shell minikube service webserver --namespace default --url)
+SERVICE_URL = $(shell minikube service webserver --namespace default --url | cut -d ' ' -f 2-)
 IMAGE_NAME := igorsechyn/kube-job-runner
 PWD := $(shell pwd)
 DOCKER_DIGEST = $(shell docker inspect --format='{{index .RepoDigests 0}}' $(IMAGE_NAME):$(GIT_HASH))
@@ -26,7 +26,7 @@ test-unit:
 test-integration:
 	SERVICE_URL=$(SERVICE_URL) go test -tags integration ./... -timeout 120s -count 1
 
-test: deploy-local wait-for-service test-unit test-integration
+test: undeploy-local deploy-local wait-for-service test-unit test-integration
 
 docker: clean
 	docker build --build-arg binary_name=$(BINARY_NAME) --build-arg main_pkg=$(MAIN_PKG) -t $(IMAGE_NAME):$(GIT_HASH) .
@@ -39,6 +39,9 @@ docker-sample-job:
 
 deploy-local:
 	skaffold run
+
+undeploy-local:
+	skaffold delete
 
 wait-for-service:
 	$(eval HOST=$(shell minikube service webserver --namespace default --url | cut -d '/' -f 3-))

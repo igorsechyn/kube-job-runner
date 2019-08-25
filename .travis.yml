@@ -7,7 +7,7 @@ go:
 cache:
   directories:
     - $GOPATH/pkg/mod
-    - $GOCACHE
+    - $HOME/.cache/go-build
 env:
   global:
     - MINIKUBE_WANTUPDATENOTIFICATION=false
