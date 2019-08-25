@@ -1,4 +1,4 @@
-https://travis-ci.org/igorsechyn/kube-job-runner.svg?branch=master
+[![Build Status](https://travis-ci.org/igorsechyn/kube-job-runner.svg?branch=master)](https://travis-ci.org/igorsechyn/kube-job-runner)
 
 # Kubernetes job runner
 
