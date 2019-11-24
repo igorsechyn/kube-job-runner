@@ -72,7 +72,7 @@ func TestJobStatusUpdate(t *testing.T) {
 
 			whenAStatusUpdateIsReceived(testCase.status, allMocks)
 
-			allMocks.MockQueueClient.AssertCalled(t, "SendMessage", queue.MessageBody(fmt.Sprintf(`{"jobID":"some-id","status":"%v","type":"JOB_STATUS_UPDATE"}`, testCase.expectedStatus)))
+			allMocks.MockQueueClient.AssertCalled(t, "SendMessage", fmt.Sprintf(`{"jobID":"some-id","status":"%v","type":"JOB_STATUS_UPDATE"}`, testCase.expectedStatus))
 		})
 	}
 }

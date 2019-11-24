@@ -45,7 +45,7 @@ func TestListener_Process(t *testing.T) {
 
 		whenAnEventIsReceived(job.PodEvent{PodID: "pod-id", Status: "Failed", Reason: "Error"}, allMocks)
 
-		allMocks.MockQueueClient.AssertCalled(t, "SendMessage", queue.MessageBody(`{"jobID":"job-id","status":"Failed","type":"JOB_STATUS_UPDATE","reason":"Error"}`))
+		allMocks.MockQueueClient.AssertCalled(t, "SendMessage", `{"jobID":"job-id","status":"Failed","type":"JOB_STATUS_UPDATE","reason":"Error"}`)
 	})
 
 	t.Run("it should not send a message, if the status is not failed", func(t *testing.T) {

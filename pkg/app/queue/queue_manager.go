@@ -26,7 +26,7 @@ type JobCleanupMessage struct {
 
 type MessageListener interface {
 	Accept(messageType string) bool
-	Process(message MessageBody) error
+	Process(message string) error
 }
 
 type Manager struct {
@@ -86,7 +86,7 @@ func (queue *Manager) sendMessage(body interface{}) error {
 		return err
 	}
 
-	err = queue.client.SendMessage(MessageBody(string(message)))
+	err = queue.client.SendMessage(string(message))
 	return err
 }
 
@@ -99,8 +99,10 @@ func (queue *Manager) ProcessMessages(messages []Message) {
 
 		for _, listener := range queue.listeners {
 			if listener.Accept(messageType) {
-				listener.Process(message.Body)
-				message.Delete()
+				err := listener.Process(message.Body)
+				if err == nil {
+					message.Delete()
+				}
 			}
 		}
 	}
@@ -114,7 +116,7 @@ func (queue *Manager) ReceiveMessages() []Message {
 	return messages
 }
 
-func GetMessageType(message MessageBody) (string, error) {
+func GetMessageType(message string) (string, error) {
 	var messageType struct {
 		Type string `json:"type"`
 	}

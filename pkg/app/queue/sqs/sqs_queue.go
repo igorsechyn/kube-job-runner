@@ -39,7 +39,7 @@ func getAWSConfig(config config.Config) *aws.Config {
 	return awsConfig
 }
 
-func (client *Client) SendMessage(message queue.MessageBody) error {
+func (client *Client) SendMessage(message string) error {
 	sqsMessage := &sqs.SendMessageInput{
 		MessageBody: aws.String(string(message)),
 		QueueUrl:    client.queueUrl,
@@ -69,7 +69,7 @@ func (client *Client) toMessages(sqsMessages []*sqs.Message) []queue.Message {
 	for index, sqsMessage := range sqsMessages {
 		deleteFunction := client.getDeleteFunction(sqsMessage)
 		message := queue.Message{
-			Body:   queue.MessageBody(*sqsMessage.Body),
+			Body:   *sqsMessage.Body,
 			Delete: deleteFunction,
 		}
 		messages[index] = message

@@ -20,7 +20,6 @@ import (
 type Client struct {
 	clientset          *kubernetes.Clientset
 	namespace          string
-	informersFactory   informers.SharedInformerFactory
 	statusListeners    []job.StatusListener
 	podEventsListeners []job.PodEventListener
 	mux                sync.Mutex

@@ -10,6 +10,7 @@ import (
 	"kube-job-runner/pkg/app/data"
 	"kube-job-runner/pkg/app/queue"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -19,7 +20,7 @@ func TestJobUpdateMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"wrongField":"uuid","type":"WRONG_TYPE"}`),
+				Body:   `{"wrongField":"uuid","type":"WRONG_TYPE"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -35,7 +36,7 @@ func TestJobUpdateMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"status": "InProgress", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`),
+				Body:   `{"status": "InProgress", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -51,7 +52,7 @@ func TestJobUpdateMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"status": "Succeeded", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`),
+				Body:   `{"status": "Succeeded", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -65,7 +66,7 @@ func TestJobUpdateMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"status": "InProgress", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`),
+				Body:   `{"status": "InProgress", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -79,7 +80,7 @@ func TestJobUpdateMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"status": "InProgress", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`),
+				Body:   `{"status": "InProgress", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -94,7 +95,7 @@ func TestJobUpdateMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"status": "InProgress", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`),
+				Body:   `{"status": "InProgress", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -109,7 +110,7 @@ func TestJobUpdateMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"status": "InProgress", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`),
+				Body:   `{"status": "InProgress", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -125,12 +126,12 @@ func TestJobUpdateMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"status": "Succeeded", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`),
+				Body:   `{"status": "Succeeded", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
 
-		allMocks.MockQueueClient.AssertCalled(t, "SendMessage", queue.MessageBody(`{"jobID":"uuid","type":"CLEANUP_JOB"}`))
+		allMocks.MockQueueClient.AssertCalled(t, "SendMessage", `{"jobID":"uuid","type":"CLEANUP_JOB"}`)
 	})
 
 	t.Run("it should send job cleanup message, when job failed", func(t *testing.T) {
@@ -141,11 +142,45 @@ func TestJobUpdateMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"status": "Failed", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`),
+				Body:   `{"status": "Failed", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
 
-		allMocks.MockQueueClient.AssertCalled(t, "SendMessage", queue.MessageBody(`{"jobID":"uuid","type":"CLEANUP_JOB"}`))
+		allMocks.MockQueueClient.AssertCalled(t, "SendMessage", `{"jobID":"uuid","type":"CLEANUP_JOB"}`)
+	})
+
+	t.Run("it should delete message after processing it", func(t *testing.T) {
+		allMocks := mocks.InitMocks()
+		allMocks.MockStore.GivenGetDocumentsReturns([]data.Document{{Status: "InProgress", Timestamp: 10}})
+		allMocks.MockStore.GivenPutDocumentSucceeds()
+		deleted := false
+		deleteFunction := func() { deleted = true }
+
+		whenMessagesFromQueueAreProcessed([]queue.Message{
+			{
+				Body:   `{"status": "Succeeded", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`,
+				Delete: deleteFunction,
+			},
+		}, allMocks)
+
+		assert.True(t, deleted, "message was not deleted")
+	})
+
+	t.Run("it should not delete message, if processing fails", func(t *testing.T) {
+		allMocks := mocks.InitMocks()
+		allMocks.MockStore.GivenGetDocumentsReturns([]data.Document{{Status: "InProgress", Timestamp: 10}})
+		allMocks.MockStore.GivenPutDocumentFails(fmt.Errorf(("some error")))
+		deleted := false
+		deleteFunction := func() { deleted = true }
+
+		whenMessagesFromQueueAreProcessed([]queue.Message{
+			{
+				Body:   `{"status": "Succeeded", "jobID":"uuid","type":"JOB_STATUS_UPDATE"}`,
+				Delete: deleteFunction,
+			},
+		}, allMocks)
+
+		assert.False(t, deleted, "message was deleted")
 	})
 }

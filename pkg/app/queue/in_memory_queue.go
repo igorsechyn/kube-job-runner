@@ -15,7 +15,7 @@ type InMemoryQueueClient struct {
 	mux          sync.Mutex
 }
 
-func (store *InMemoryQueueClient) SendMessage(message MessageBody) error {
+func (store *InMemoryQueueClient) SendMessage(message string) error {
 	store.mux.Lock()
 	defer store.mux.Unlock()
 	store.messagesList = append(store.messagesList, Message{Body: message, Delete: func() {

@@ -18,7 +18,7 @@ func (handler *CleanupJobHandler) Accept(messageType string) bool {
 	return messageType == queue.JobCleanupType
 }
 
-func (handler *CleanupJobHandler) Process(message queue.MessageBody) error {
+func (handler *CleanupJobHandler) Process(message string) error {
 	cleanupJobMessage, err := parseCleanupJobMessage(message)
 	if err != nil {
 		handler.Reporter.Error("cleanup.job.message.wrong.format", err, map[string]interface{}{"message": message})
@@ -29,7 +29,7 @@ func (handler *CleanupJobHandler) Process(message queue.MessageBody) error {
 	return err
 }
 
-func parseCleanupJobMessage(message queue.MessageBody) (queue.JobCleanupMessage, error) {
+func parseCleanupJobMessage(message string) (queue.JobCleanupMessage, error) {
 	var jobCleanupMessage queue.JobCleanupMessage
 	dec := json.NewDecoder(bytes.NewReader([]byte(message)))
 	dec.DisallowUnknownFields()

@@ -10,8 +10,12 @@ clean:
 	rm -rf build/bin/*
 
 install:
-	go mod download
-
+	mkdir -p bin
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s v1.21.0
+	GO111MODULE=on go mod download
+	GO111MODULE=on go mod vendor
+	GO111MODULE=on go mod tidy
+	
 build: clean fmt
 	env GOOS=darwin GOARCH=amd64 go build -o build/bin/darwin.amd64/$(BINARY_NAME) $(GOBUILD_VERSION_ARGS) $(MAIN_PKG)
 	chmod +x build/bin/darwin.amd64/$(BINARY_NAME)
@@ -19,6 +23,9 @@ build: clean fmt
 fmt:
 	gofmt -w=true -s $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 	goimports -w=true -d $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+
+lint-code:
+	./bin/golangci-lint run ./... --skip-dirs vendor -D errcheck
 
 test-unit:
 	go test -tags unit ./... -timeout 120s -count 1

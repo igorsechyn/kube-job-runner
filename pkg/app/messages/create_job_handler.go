@@ -19,7 +19,7 @@ func (handler *CreateJobHandler) Accept(messageType string) bool {
 	return messageType == queue.CreateMessageType
 }
 
-func (handler *CreateJobHandler) Process(message queue.MessageBody) error {
+func (handler *CreateJobHandler) Process(message string) error {
 	createJobMessage, err := parseCreateJobMessage(message)
 	if err != nil {
 		handler.Reporter.Error("create.job.message.wrong.format", err, map[string]interface{}{"message": message})
@@ -34,21 +34,22 @@ func (handler *CreateJobHandler) Process(message queue.MessageBody) error {
 
 	err = handler.JobService.CreateJob(job.Job{JobName: jobDetails.Name, Image: jobDetails.Image, Tag: jobDetails.Tag})
 	if err != nil {
-		handler.failJob(jobDetails)
+		return handler.failJob(jobDetails)
 	}
 	return err
 }
 
-func (handler *CreateJobHandler) failJob(details job.Details) {
-	handler.JobService.SaveJobDetails(job.Details{
+func (handler *CreateJobHandler) failJob(details job.Details) error {
+	_, err := handler.JobService.SaveJobDetails(job.Details{
 		Status: data.JobFailed,
 		Image:  details.Image,
 		Tag:    details.Tag,
 		Name:   details.Name,
 	})
+	return err
 }
 
-func parseCreateJobMessage(message queue.MessageBody) (queue.CreateJobMessage, error) {
+func parseCreateJobMessage(message string) (queue.CreateJobMessage, error) {
 	var createJobMessage queue.CreateJobMessage
 	dec := json.NewDecoder(bytes.NewReader([]byte(message)))
 	dec.DisallowUnknownFields()

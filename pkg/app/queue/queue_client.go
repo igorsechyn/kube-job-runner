@@ -10,11 +10,11 @@ const (
 )
 
 type Message struct {
-	Body   MessageBody
+	Body   string
 	Delete func()
 }
 
 type Client interface {
-	SendMessage(message MessageBody) error
+	SendMessage(message string) error
 	ReceiveMessages() ([]Message, error)
 }

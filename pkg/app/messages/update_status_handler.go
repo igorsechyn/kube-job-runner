@@ -20,7 +20,7 @@ func (handler *UpdateJobStatusHandler) Accept(messageType string) bool {
 	return messageType == queue.JobStatusUpdateType
 }
 
-func (handler *UpdateJobStatusHandler) Process(message queue.MessageBody) error {
+func (handler *UpdateJobStatusHandler) Process(message string) error {
 	jobStatusUpdate, err := parseUpdateJobStatusMessage(message)
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (handler *UpdateJobStatusHandler) cleanupJob(jobStatusUpdate queue.JobStatu
 	return nil
 }
 
-func parseUpdateJobStatusMessage(message queue.MessageBody) (queue.JobStatusUpdateMessage, error) {
+func parseUpdateJobStatusMessage(message string) (queue.JobStatusUpdateMessage, error) {
 	var updateJobMessage queue.JobStatusUpdateMessage
 	dec := json.NewDecoder(bytes.NewReader([]byte(message)))
 	dec.DisallowUnknownFields()

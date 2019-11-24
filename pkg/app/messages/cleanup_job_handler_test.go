@@ -18,7 +18,7 @@ func TestJobCleanupMessageProcessing(t *testing.T) {
 		allMocks := mocks.InitMocks()
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"wrongField":"uuid","type":"WRONG_TYPE_JOB"}`),
+				Body:   `{"wrongField":"uuid","type":"WRONG_TYPE_JOB"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -32,7 +32,7 @@ func TestJobCleanupMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"jobID":"uuid","type":"CLEANUP_JOB"}`),
+				Body:   `{"jobID":"uuid","type":"CLEANUP_JOB"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -46,7 +46,7 @@ func TestJobCleanupMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"jobID":"uuid","type":"CLEANUP_JOB"}`),
+				Body:   `{"jobID":"uuid","type":"CLEANUP_JOB"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -60,7 +60,7 @@ func TestJobCleanupMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"jobID":"uuid","type":"CLEANUP_JOB"}`),
+				Body:   `{"jobID":"uuid","type":"CLEANUP_JOB"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -76,11 +76,27 @@ func TestJobCleanupMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"jobID":"uuid","type":"CLEANUP_JOB"}`),
+				Body:   `{"jobID":"uuid","type":"CLEANUP_JOB"}`,
 				Delete: deleteFunction,
 			},
 		}, allMocks)
 
 		assert.True(t, deleted, "message was not deleted")
+	})
+
+	t.Run("it should not delete message if processing failed", func(t *testing.T) {
+		allMocks := mocks.InitMocks()
+		allMocks.MockJobClient.GivenDeleteJobFailed(fmt.Errorf(("some error")))
+		deleted := false
+		deleteFunction := func() { deleted = true }
+
+		whenMessagesFromQueueAreProcessed([]queue.Message{
+			{
+				Body:   `{"jobID":"uuid","type":"CLEANUP_JOB"}`,
+				Delete: deleteFunction,
+			},
+		}, allMocks)
+
+		assert.False(t, deleted, "message was deleted")
 	})
 }

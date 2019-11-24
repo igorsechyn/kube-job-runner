@@ -10,7 +10,7 @@ type MockQueueClient struct {
 	mock.Mock
 }
 
-func (queueClient *MockQueueClient) SendMessage(message queue.MessageBody) error {
+func (queueClient *MockQueueClient) SendMessage(message string) error {
 	args := queueClient.Called(message)
 	return args.Error(0)
 }

@@ -98,7 +98,7 @@ func TestService_SubmitJobRequest(t *testing.T) {
 		_, err := whenJobRequestIsSubmitted(allMocks)
 
 		require.NoError(t, err)
-		allMocks.MockQueueClient.AssertCalled(t, "SendMessage", queue.MessageBody(`{"jobID":"job-uuid","type":"CREATE_JOB"}`))
+		allMocks.MockQueueClient.AssertCalled(t, "SendMessage", `{"jobID":"job-uuid","type":"CREATE_JOB"}`)
 	})
 
 	t.Run("it should return an error, if sending a message fails", func(t *testing.T) {

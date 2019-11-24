@@ -11,6 +11,7 @@ import (
 	"kube-job-runner/pkg/app/job"
 	"kube-job-runner/pkg/app/queue"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -19,7 +20,7 @@ func TestJobCreationMessageProcessing(t *testing.T) {
 		allMocks := mocks.InitMocks()
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"wrongField":"uuid","type":"CREATE_JOB"}`),
+				Body:   `{"wrongField":"uuid","type":"CREATE_JOB"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -35,7 +36,7 @@ func TestJobCreationMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"jobID":"uuid","type":"CREATE_JOB"}`),
+				Body:   `{"jobID":"uuid","type":"CREATE_JOB"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -50,7 +51,7 @@ func TestJobCreationMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"jobID":"uuid","type":"CREATE_JOB"}`),
+				Body:   `{"jobID":"uuid","type":"CREATE_JOB"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -65,7 +66,7 @@ func TestJobCreationMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"jobID":"uuid","type":"CREATE_JOB"}`),
+				Body:   `{"jobID":"uuid","type":"CREATE_JOB"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -81,7 +82,7 @@ func TestJobCreationMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"jobID":"uuid","type":"CREATE_JOB"}`),
+				Body:   `{"jobID":"uuid","type":"CREATE_JOB"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
@@ -97,11 +98,45 @@ func TestJobCreationMessageProcessing(t *testing.T) {
 
 		whenMessagesFromQueueAreProcessed([]queue.Message{
 			{
-				Body:   queue.MessageBody(`{"jobID":"uuid","type":"CREATE_JOB"}`),
+				Body:   `{"jobID":"uuid","type":"CREATE_JOB"}`,
 				Delete: func() {},
 			},
 		}, allMocks)
 
 		allMocks.MockStore.AssertCalled(t, "PutDocument", data.Document{Status: "Failed"})
+	})
+
+	t.Run("it should delete message after processing it", func(t *testing.T) {
+		allMocks := mocks.InitMocks()
+		allMocks.MockStore.GivenGetDocumentsReturns([]data.Document{{JobID: "job-id", Tag: "some-tag", Image: "some-image"}})
+		allMocks.MockStore.GivenPutDocumentSucceeds()
+		allMocks.MockJobClient.GivenSubmitJobSucceeds()
+		deleted := false
+		deleteFunction := func() { deleted = true }
+
+		whenMessagesFromQueueAreProcessed([]queue.Message{
+			{
+				Body:   `{"jobID":"job-id","type":"CREATE_JOB"}`,
+				Delete: deleteFunction,
+			},
+		}, allMocks)
+
+		assert.True(t, deleted, "message was not deleted")
+	})
+
+	t.Run("it should not delete message if processing fails", func(t *testing.T) {
+		allMocks := mocks.InitMocks()
+		allMocks.MockStore.GivenGetDocumentsFailed(fmt.Errorf("some error"))
+		deleted := false
+		deleteFunction := func() { deleted = true }
+
+		whenMessagesFromQueueAreProcessed([]queue.Message{
+			{
+				Body:   `{"jobID":"job-id","type":"CREATE_JOB"}`,
+				Delete: deleteFunction,
+			},
+		}, allMocks)
+
+		assert.False(t, deleted, "message was deleted")
 	})
 }

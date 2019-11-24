@@ -30,21 +30,17 @@ func GetComponents(config config.Config) []app.Component {
 		return []app.Component{&web.Server{}, &worker.MessagesProcessor{}, &worker.JobStatusProcessor{}, &worker.PodEventsProcessor{}}
 	}
 
-	components := make([]app.Component, len(config.Components), len(config.Components))
+	components := make([]app.Component, len(config.Components))
 	for index, component := range config.Components {
 		switch component {
 		case WebServerComponent:
 			components[index] = &web.Server{}
-			break
 		case MessagesProcessorComponent:
 			components[index] = &worker.MessagesProcessor{}
-			break
 		case JobStatusProcessorComponent:
 			components[index] = &worker.JobStatusProcessor{}
-			break
 		case PodEventsProcessorComponent:
 			components[index] = &worker.PodEventsProcessor{}
-			break
 		}
 	}
 	return components
