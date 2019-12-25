@@ -141,12 +141,12 @@ func (jobService *Service) sendSubmitJobRequestMessage(jobId string) error {
 	return nil
 }
 
-func (jobService *Service) WatchJobs(listener StatusListener) {
+func (jobService *Service) WatchJobs(ctx context.Context, listener StatusListener) {
 	jobService.JobClient.AddJobStatusListener(listener)
-	jobService.JobClient.WatchJobs(context.Background())
+	jobService.JobClient.WatchJobs(ctx)
 }
 
-func (jobService *Service) WatchEvents(listener PodEventListener) {
+func (jobService *Service) WatchEvents(ctx context.Context, listener PodEventListener) {
 	jobService.JobClient.AddPodEventsListener(listener)
-	jobService.JobClient.WatchEvents(context.Background())
+	jobService.JobClient.WatchEvents(ctx)
 }

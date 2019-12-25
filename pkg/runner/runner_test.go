@@ -1,15 +1,15 @@
 // +build unit
 
-package executor_test
+package runner_test
 
 import (
 	"testing"
 
 	"kube-job-runner/pkg/app"
 	"kube-job-runner/pkg/app/config"
-	"kube-job-runner/pkg/executor"
-	"kube-job-runner/pkg/executor/web"
-	"kube-job-runner/pkg/executor/worker"
+	"kube-job-runner/pkg/runner"
+	"kube-job-runner/pkg/runner/web"
+	"kube-job-runner/pkg/runner/worker"
 
 	"github.com/stretchr/testify/require"
 )
@@ -29,34 +29,34 @@ func Test_GetComponents(t *testing.T) {
 		},
 		{
 			description:        "it should return web server component",
-			config:             config.Config{Components: []string{executor.WebServerComponent}},
+			config:             config.Config{Components: []string{runner.WebServerComponent}},
 			expectedComponents: []app.Component{&web.Server{}},
 		},
 		{
 			description:        "it should return job status processor component",
-			config:             config.Config{Components: []string{executor.JobStatusProcessorComponent}},
+			config:             config.Config{Components: []string{runner.JobStatusProcessorComponent}},
 			expectedComponents: []app.Component{&worker.JobStatusProcessor{}},
 		},
 		{
 			description:        "it should return messages processor component",
-			config:             config.Config{Components: []string{executor.MessagesProcessorComponent}},
+			config:             config.Config{Components: []string{runner.MessagesProcessorComponent}},
 			expectedComponents: []app.Component{&worker.MessagesProcessor{}},
 		},
 		{
 			description:        "it should return messages processor component",
-			config:             config.Config{Components: []string{executor.PodEventsProcessorComponent}},
+			config:             config.Config{Components: []string{runner.PodEventsProcessorComponent}},
 			expectedComponents: []app.Component{&worker.PodEventsProcessor{}},
 		},
 		{
 			description:        "it should return multiple components, if they are specified in the config",
-			config:             config.Config{Components: []string{executor.WebServerComponent, executor.JobStatusProcessorComponent}},
+			config:             config.Config{Components: []string{runner.WebServerComponent, runner.JobStatusProcessorComponent}},
 			expectedComponents: []app.Component{&web.Server{}, &worker.JobStatusProcessor{}},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.description, func(t *testing.T) {
-			components := executor.GetComponents(testCase.config)
+			components := runner.GetComponents(testCase.config)
 
 			require.Equal(t, testCase.expectedComponents, components)
 		})

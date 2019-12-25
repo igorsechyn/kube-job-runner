@@ -10,11 +10,11 @@ import (
 )
 
 type App struct {
-	Reporter          *reporter.Reporter
-	JobClient         job.Client
-	JobService        *job.Service
-	Queue             *queue.Manager
-	Config            config.Config
+	Reporter   *reporter.Reporter
+	JobClient  job.Client
+	JobService *job.Service
+	Queue      *queue.Manager
+	Config     config.Config
 }
 
 type Component interface {

@@ -12,5 +12,5 @@ type JobStatusProcessor struct{}
 func (processor *JobStatusProcessor) Run(ctx context.Context, app *app.App) {
 	listener := &status.JobStatusUpdater{QueueManager: app.Queue}
 
-	app.JobService.WatchJobs(listener)
+	app.JobService.WatchJobs(ctx, listener)
 }

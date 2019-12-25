@@ -16,5 +16,5 @@ func (processor *PodEventsProcessor) Run(ctx context.Context, app *app.App) {
 		QueueManager: app.Queue,
 	}
 
-	app.JobService.WatchEvents(listener)
+	app.JobService.WatchEvents(ctx, listener)
 }

@@ -17,13 +17,18 @@ import (
 	"kube-job-runner/pkg/app/reporter"
 	"kube-job-runner/pkg/app/reporter/zerolog"
 	"kube-job-runner/pkg/app/time"
-	"kube-job-runner/pkg/executor"
+	"kube-job-runner/pkg/runner"
 )
 
 func main() {
 	appConfig := viper.LoadConfig()
 	appReporter := reporter.New(zerolog.NewJSONLogger())
-	k8sClient, _ := k8s.NewClient(appConfig.Namespace)
+	k8sClient, err := k8s.NewClient(appConfig.Namespace)
+	if err != nil {
+		appReporter.Error("k8s.client.create.error", err, map[string]interface{}{})
+		os.Exit(1)
+		return
+	}
 	queueClient, err := sqs.NewClient(appConfig)
 	if err != nil {
 		appReporter.Error("queue.client.create.error", err, map[string]interface{}{})
@@ -48,17 +53,17 @@ func main() {
 		Queue:       queueManager,
 	}
 	application := &app.App{
-		Reporter:          appReporter,
-		JobService:        jobService,
-		Queue:             queueManager,
-		Config:            appConfig,
-		JobClient:         k8sClient,
+		Reporter:   appReporter,
+		JobService: jobService,
+		Queue:      queueManager,
+		Config:     appConfig,
+		JobClient:  k8sClient,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	cancelOnInterrupt(ctx, cancel)
-	executor.RunWithContext(ctx, application)
+	runner.RunWithContext(ctx, application)
 }
 
 func cancelOnInterrupt(ctx context.Context, cancel context.CancelFunc) {

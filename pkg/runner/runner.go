@@ -1,12 +1,12 @@
-package executor
+package runner
 
 import (
 	"context"
 
 	"kube-job-runner/pkg/app"
 	"kube-job-runner/pkg/app/config"
-	"kube-job-runner/pkg/executor/web"
-	"kube-job-runner/pkg/executor/worker"
+	"kube-job-runner/pkg/runner/web"
+	"kube-job-runner/pkg/runner/worker"
 )
 
 const (

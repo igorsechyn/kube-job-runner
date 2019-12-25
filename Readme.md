@@ -6,12 +6,12 @@ A spike to implement a simple control plane on top of kubernetes Job object. Thi
 
 ## Design
 
-Application consists of several components (pkg/executor), which run separately from each other on their own compute:
+Application consists of several components (pkg/runner), which run separately from each other on their own compute:
 
 - `web_server` - HTTP API to submit job requests and get the execution status. On posting a job request, details are stored in data store and a queue message is sent to start processing
 - `messages_processor` - a worker to poll queue and process messages to create, update and delet jobs
-- `job_status_processor` - watches Job objects using k8s informer and sends messges to the queue to update job statuses
-- `pod_events_processor` - watches Pod objects events and sends a message to mark job as failed, if Pod failed to start. Pods can fail for different reasons (e.g. image name is wrong), which will not cause the Job status to update. The idea is to handle scenarios where the reason is not recoverable and fail fast instead waiting for a timeout
+- `job_status_processor` - a worker to watch Job objects using k8s informer and send messges to the queue to update job statuses
+- `pod_events_processor` - a worker to watche Pod objects events and send a message to mark job as failed, if Pod failed to start. Pods can fail for different reasons (e.g. image name is wrong), which will not cause the Job status to update. The idea is to handle scenarios where the reason is not recoverable and fail fast instead waiting for a timeout
 
 Job details are stored in a datastore (curently postgres) and all updates are triggered through through a message to a queue (currently implemented with SQS). 
 
@@ -19,7 +19,7 @@ Job details are stored in a datastore (curently postgres) and all updates are tr
 
 - go 1.12.9
 - docker 18.06.1-ce (multistage build is required)
-- minikube 0.26 for local development (https://kubernetes.io/docs/tasks/tools/install-minikube/)
+- minikube 1.6.2 for local development (https://kubernetes.io/docs/tasks/tools/install-minikube/)
 - skaffold (https://github.com/GoogleContainerTools/skaffold)
 
 ## Setting up a development machine
@@ -29,7 +29,7 @@ Job details are stored in a datastore (curently postgres) and all updates are tr
 On OSX use hyperkit (see https://minikube.sigs.k8s.io/docs/start/macos/)
 
 ```
-minikube start --vm-driver=hyperkit
+minikube start --vm-driver=hyperkit --kubernetes-version=1.17.0
 ```
 
 2. Install project dependencies
