@@ -31,23 +31,25 @@ func whenJobIsFinished(image, tag string, timeout int64) (string, error) {
 	return getJobStatus(client, jobUrl, 1*time.Minute)
 }
 
+func shouldPoll(err error, status string) bool {
+	return err != nil || (status == "InProgress" || status == "Acknowledged")
+}
+
 func getJobStatus(client *RunnerClient, jobURL string, timeout time.Duration) (string, error) {
-	timeoutTicker := time.NewTimer(timeout)
+	timeoutTimer := time.NewTimer(timeout)
 	pollTicker := time.NewTicker(5000 * time.Millisecond)
 	for {
 		select {
 		case <-pollTicker.C:
 			status, err := client.GetJobStatus(jobURL)
-			if err != nil {
+			if shouldPoll(err, status) {
 				continue
 			}
 
-			if status == "InProgress" || status == "Acknowledged" {
-				continue
-			}
-
+			pollTicker.Stop()
+			timeoutTimer.Stop()
 			return status, nil
-		case <-timeoutTicker.C:
+		case <-timeoutTimer.C:
 			return "", fmt.Errorf("job did not finish in time")
 		}
 	}
