@@ -2,7 +2,18 @@
 
 # Kubernetes job runner
 
-A spike to implement kubernetes job runner
+A spike to implement a simple control plane on top of kubernetes Job object. This is a validation of a design and not meant to be used in production.
+
+## Design
+
+Application consists of several components (pkg/executor), which run separately from each other on their own compute:
+
+- `web_server` - HTTP API to submit job requests and get the execution status. On posting a job request, details are stored in data store and a queue message is sent to start processing
+- `messages_processor` - a worker to poll queue and process messages to create, update and delet jobs
+- `job_status_processor` - watches Job objects using k8s informer and sends messges to the queue to update job statuses
+- `pod_events_processor` - watches Pod objects events and sends a message to mark job as failed, if Pod failed to start. Pods can fail for different reasons (e.g. image name is wrong), which will not cause the Job status to update. The idea is to handle scenarios where the reason is not recoverable and fail fast instead waiting for a timeout
+
+Job details are stored in a datastore (curently postgres) and all updates are triggered through through a message to a queue (currently implemented with SQS). 
 
 ## Development dependencies
 

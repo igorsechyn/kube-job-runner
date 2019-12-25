@@ -6,7 +6,6 @@ const (
 	CreateMessageType   = "CREATE_JOB"
 	JobStatusUpdateType = "JOB_STATUS_UPDATE"
 	JobCleanupType      = "CLEANUP_JOB"
-	PodEventType        = "POD_EVENT"
 )
 
 type Message struct {

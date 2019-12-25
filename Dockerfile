@@ -1,4 +1,4 @@
-FROM golang:1.12.9 AS build-env
+FROM golang:1.13.4 AS build-env
 ARG binary_name
 ARG main_pkg
 WORKDIR /service/
